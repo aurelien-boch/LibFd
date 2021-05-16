@@ -19,6 +19,7 @@ This paragraph contains all instructions needed to install the library into your
 using a Makefile or CMakeLists.
 
 ### Installing repo into your project
+
 ```bash
 $ mkdir lib
 $ cd lib
@@ -26,6 +27,7 @@ $ git clone https://github.com/aurelien-boch/LibFd.git
 ```
 
 ### Writing CMakeLists
+
 ```cmake
 cmake_minimum_required (VERSION 3.17)
 project(example)
@@ -72,16 +74,16 @@ Just add the library control into your rules and link with ldflags
 LDFLAGS += lib/LibFd/libfd.a
 
 all: $(OBJ)
-    ...
     make -C lib/libFd
+    ...
 
 clean:
-    ...
     make -C lib/libFd clean
-    
-fclean: clean
     ...
+
+fclean: clean
     make -C lib/libFd fclean
+    ...
 ```
 
 ## FdMonitor
