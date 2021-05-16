@@ -17,7 +17,7 @@ namespace fdlib
             [[nodiscard]] int getFd() const;
 
         private:
-            int _pipefd[2];
+            int _pipefd[2]{};
     };
 }
 

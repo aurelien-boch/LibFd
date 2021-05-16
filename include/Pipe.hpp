@@ -28,7 +28,10 @@ namespace fdlib
                 return (res);
             }
 
-            [[nodiscard]] int getFd() const
+            [[nodiscard]] int getReadingFd() const
+            { return (this->_pipefd[0]); };
+
+            [[nodiscard]] int getWritingFd() const
             { return (this->_pipefd[0]); };
 
         private:

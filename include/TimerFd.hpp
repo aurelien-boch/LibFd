@@ -45,6 +45,7 @@ namespace fdlib
 
         private:
             itimerspec _timer;
+
             int _fd;
     };
 }

@@ -32,10 +32,13 @@ namespace fdlib
 
         private:
             void _treatEvents(std::vector<std::any> &res, std::vector<epoll_event> &events) const;
+
             void _editFdData(int targetFd, std::uint32_t events) const;
 
             int _epollFd;
+
             std::unordered_map<int, std::function<void(int fd)>> _functions;
+
             std::unordered_map<int, std::any> _data;
     };
 }
