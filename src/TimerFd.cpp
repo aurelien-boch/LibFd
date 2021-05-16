@@ -58,27 +58,7 @@ void fdlib::TimerFd::setRepeatRate(long nanoseconds)
     this->_timer.it_interval.tv_nsec = nanoseconds;
 }
 
-long fdlib::TimerFd::getSecDelay() const
-{
-    return (this->_timer.it_value.tv_sec);
-}
-
-long fdlib::TimerFd::getDelay() const
-{
-    return (this->_timer.it_value.tv_nsec);
-}
-
-long fdlib::TimerFd::getSecRepeatRate() const
-{
-    return (this->_timer.it_interval.tv_sec);
-}
-
-long fdlib::TimerFd::getRepeatRate() const
-{
-    return (this->_timer.it_interval.tv_nsec);
-}
-
-void fdlib::TimerFd::startTimer()
+void fdlib::TimerFd::startTimer() const
 {
     if (timerfd_settime(this->_fd, 0, &(this->_timer), nullptr) == -1)
        throw std::runtime_error(strerror(errno));
@@ -108,7 +88,7 @@ void fdlib::TimerFd::stopTimer() const
         throw std::runtime_error(strerror(errno));
 }
 
-void fdlib::TimerFd::resetTimer()
+void fdlib::TimerFd::resetTimer() const
 {
     this->startTimer();
 }

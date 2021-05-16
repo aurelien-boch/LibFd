@@ -20,24 +20,28 @@ namespace fdlib
 
             void setRepeatRate(long nanoseconds);
 
-            [[nodiscard]] long getSecDelay() const;
+            [[nodiscard]] long getSecDelay() const
+            { return (this->_timer.it_value.tv_sec); };
 
-            [[nodiscard]] long getDelay() const;
+            [[nodiscard]] long getDelay() const
+            { return (this->_timer.it_value.tv_nsec); };
 
-            [[nodiscard]] long getSecRepeatRate() const;
+            [[nodiscard]] long getSecRepeatRate() const
+            { return (this->_timer.it_interval.tv_sec); };
 
-            [[nodiscard]] long getRepeatRate() const;
+            [[nodiscard]] long getRepeatRate() const
+            { return (this->_timer.it_interval.tv_nsec); };
 
-            void startTimer();
+            [[nodiscard]] int getFd() const
+            { return (this->_fd); };
+
+            void startTimer() const;
 
             void clearTimer() const;
 
             void stopTimer() const;
 
-            void resetTimer();
-
-            int getFd()
-            { return (this->_fd); };
+            void resetTimer() const;
 
         private:
             itimerspec _timer;
