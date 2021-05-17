@@ -137,7 +137,7 @@ int main()
     monitor.addMonitorFd(
         0, //target fd
         EPOLLIN, //event
-        "hello, world"
+        std::string("hello, world")
     );
     
     while (cond) {
@@ -179,24 +179,25 @@ the FdMonitor class to force the triggering.
 
 ### Some examples
 
-Triggering and clearing a stateFd:
+Triggering a StateFd in a thread and wait it in another:
 ```c++
 #include <thread>
 #include <chrono>
 #include <iostream>
 #include "lib/libFd/include/StateFd.hpp"
 
-static void triggerFdAfterDelay(const fdlib::StateFd &s, const std::uint64_t s)
+static void triggerFdAfterDelay(const fdlib::StateFd &s, const std::uint64_t sec)
 {
-    std::this_thread::sleep_for (std::chrono::seconds(s));
+    std::this_thread::sleep_for (std::chrono::seconds(sec));
     s.trigger();
 }
 
 int main()
 {
     fdlib::StateFd s;
-    std::thread t([&s]() { triggerFdAfterDelay(s); });
+    std::thread t([&s]() { triggerFdAfterDelay(s, 2); });
 
+    std::cout << "Waiting" << std::endl;
     s.wait();
     std::cout << "Fd triggered" << std::endl;
     t.join();
@@ -217,7 +218,7 @@ Creating a fd that triggers every second;
 
 int main()
 {
-    fdlib::TimerFd timer;
+    fdlib::TimerFd timer(CLOCK_MONOTONIC, 0);
 
     timer.setSecDelay(1);
     timer.setSecRepeatRate(1);
