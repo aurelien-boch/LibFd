@@ -228,7 +228,98 @@ int main()
 
 ## Using elements together
 
+Program that waits on stdin and triggers functions ad different delays simultaneously
+using FdMonitor and TimerFd classes
+```c++
+#include <iostream>
+#include "lib/libFd/include/FdMonitor.hpp"
+#include "lib/libFd/include/TimerFd.hpp"
 
+static void stdinHandler()
+{
+    std::string data;
+
+    std::cin >> data;
+    std::cout << "Stdin triggered, Data: " << data << std::endl;
+}
+
+static void firstLoop(const fdlib::TimerFd &timer)
+{
+    timer.clearTimer();
+    std::cout << "First loop triggered" << std::endl;
+}
+
+static void secondLoop(const fdlib::TimerFd &timer)
+{
+    timer.clearTimer();
+    std::cout << "Second loop triggered" << std::endl;
+}
+
+static void delayedTrigger(const fdlib::TimerFd &timer)
+{
+    timer.clearTimer();
+    std::cout << "Delayed trigger has been triggered" << std::endl;
+}
+
+
+static void prepareTimers(
+    fdlib::TimerFd &firstLoopTimer,
+    fdlib::TimerFd &secondLoopTimer,
+    fdlib::TimerFd &delayedTriggerTimer
+) {
+    firstLoopTimer.setSecDelay(1);
+    firstLoopTimer.setSecRepeatRate(3);
+    secondLoopTimer.setSecDelay(1);
+    secondLoopTimer.setSecRepeatRate(2);
+    delayedTriggerTimer.setSecDelay(1);
+    firstLoopTimer.startTimer();
+    secondLoopTimer.startTimer();
+    delayedTriggerTimer.startTimer();
+}
+
+static void bindToMonitor(
+    fdlib::FdMonitor &monitor,
+    fdlib::TimerFd &firstLoopTimer,
+    fdlib::TimerFd &secondLoopTimer,
+    fdlib::TimerFd &delayedTriggerTimer
+) {
+    monitor.addMonitorFd(
+        0,
+        EPOLLIN,
+        std::function([](int) { stdinHandler(); })
+    );
+    monitor.addMonitorFd(
+        firstLoopTimer.getFd(),
+        EPOLLIN,
+        std::function([&firstLoopTimer](int) { firstLoop(firstLoopTimer); })
+    );
+    monitor.addMonitorFd(
+        secondLoopTimer.getFd(),
+        EPOLLIN,
+        std::function([&secondLoopTimer](int) { secondLoop(secondLoopTimer); })
+    );
+    monitor.addMonitorFd(
+        delayedTriggerTimer.getFd(),
+        EPOLLIN,
+        std::function([&delayedTriggerTimer](int) { delayedTrigger(delayedTriggerTimer); })
+    );
+}
+
+int main()
+{
+    fdlib::FdMonitor monitor(0);
+    fdlib::TimerFd firstLoopTimer(CLOCK_MONOTONIC, 0);
+    fdlib::TimerFd secondLoopTimer(CLOCK_MONOTONIC, 0);
+    fdlib::TimerFd delayedTriggerTimer(CLOCK_MONOTONIC, 0);
+    std::vector<std::any> vals;
+
+    prepareTimers(firstLoopTimer, secondLoopTimer, delayedTriggerTimer);
+    bindToMonitor(monitor, firstLoopTimer, secondLoopTimer, delayedTriggerTimer);
+    std::cout << "STARTING..." << std::endl;
+    while (cond)
+        monitor.waitEvents(vals, 100, -1);
+}
+```
 ## License
 
 This code is open source software licensed under the Apache 2.0 License.
