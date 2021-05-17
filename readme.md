@@ -88,6 +88,7 @@ fclean: clean
 
 ## FdMonitor
 
+### Description
 The FdMonitor class allows you to monitor fds for multiple events.
 You can then bind data and or functions to events on fds
 
@@ -96,7 +97,7 @@ To access events list and description:
 $ man 2 epoll_ctl
 ```
 
-### Some examples:
+### Some examples
 
 Trigger function when stdin is ready for reading:
 ```c++
@@ -148,11 +149,32 @@ int main()
 
 ## Pipe
 
+### Description
+The Pipe class is just a wrapper of the C pipe function. It allows you to
+create a pipe, read and write in it. It also give you an access to the fd
+if you want to use it with the FdMonitor class.
+
+### Some examples
+
 ## StateFd
+
+### Description
+The StateFd class is a class that allows you to create a fd and toggle its state
+(triggered / non triggered) by calling methods. It can be useful when used with
+the FdMonitor class to force the triggering.
+
+### Some examples
 
 ## TimerFd
 
+### Description
+The TimerFd class is just a wrapper of the C timerfd function. It allows you to
+create fd that will be triggered after a given delay and re-triggered with a given rate.
+
+### Some examples
+
 ## Using elements together
+
 
 ## License
 
