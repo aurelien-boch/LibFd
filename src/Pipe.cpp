@@ -1,6 +1,7 @@
 #include "Pipe.hpp"
 
-fdlib::Pipe::Pipe() noexcept
+fdlib::Pipe::Pipe() noexcept :
+    _pipefd()
 {
     pipe(this->_pipefd);
 }

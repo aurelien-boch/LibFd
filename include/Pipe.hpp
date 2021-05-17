@@ -35,7 +35,7 @@ namespace fdlib
             { return (this->_pipefd[0]); };
 
         private:
-            int _pipefd[2]{};
+            int _pipefd[2];
     };
 }
 

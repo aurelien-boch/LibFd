@@ -21,5 +21,5 @@ set_target_properties(
     libfd
         PROPERTIES
         PREFIX          ""
-        CMAKE_CXX_FLAGS "-Wall -Wextra -Weffc++"
+        COMPILE_FLAGS   "-Wall -Wextra -Weffc++"
 )

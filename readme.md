@@ -88,6 +88,62 @@ fclean: clean
 
 ## FdMonitor
 
+The FdMonitor class allows you to monitor fds for multiple events.
+You can then bind data and or functions to events on fds
+
+To access events list and description:
+```bash
+$ man 2 epoll_ctl
+```
+
+### Some examples:
+
+Trigger function when stdin is ready for reading:
+```c++
+#include "lib/libFd/include/FdMonitor.hpp"
+
+static void fdTriggered(int fd)
+{
+    //do stuff with fd
+}
+
+int main()
+{
+    fdlib::FdMonitor monitor(0);
+    std::vector<std::any> vals;
+    
+    monitor.addMonitorFd(
+        0, //target fd
+        EPOLLIN, //event
+        std::function([](int fd) { fdTriggered(fd) })//data or function
+    );
+    
+    while (cond)
+        monitor.waitEvents(vals, 100, -1);
+}
+```
+
+Fill vector with data when stdin is ready for reading:
+```c++
+int main()
+{
+    fdlib::FdMonitor monitor(0);
+    std::vector<std::any> vals;
+    
+    monitor.addMonitorFd(
+        0, //target fd
+        EPOLLIN, //event
+        "hello, world"
+    );
+    
+    while (cond) {
+        monitor.waitEvents(vals, 100, -1);
+        auto data = std::any_cast<std::string>(vals[0]); //do stuff with data
+        std::cout << "Got: " << data << std::endl;
+    }
+}
+```
+
 ## Pipe
 
 ## StateFd
