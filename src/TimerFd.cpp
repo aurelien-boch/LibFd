@@ -1,24 +1,14 @@
-#include <unistd.h>
 #include <stdexcept>
 #include <cstring>
-#include <TimerFd.hpp>
+#include <unistd.h>
+#include "TimerFd.hpp"
 
-fdlib::TimerFd::TimerFd(int clockId, int flags)
+fdlib::TimerFd::TimerFd(int clockId, int flags) :
+    _timer{},
+    _fd(timerfd_create(clockId, flags))
 {
-    this->_fd = timerfd_create(clockId, flags);
-
     if (this->_fd == -1)
         throw std::runtime_error(strerror(errno));
-    this->_timer = {
-        .it_interval = {
-            .tv_sec = 0,
-            .tv_nsec = 0
-        },
-        .it_value = {
-            .tv_sec = 0,
-            .tv_nsec = 0
-        }
-    };
 }
 
 fdlib::TimerFd::~TimerFd()
@@ -26,12 +16,12 @@ fdlib::TimerFd::~TimerFd()
     close(this->_fd);
 }
 
-void fdlib::TimerFd::setSecDelay(long seconds)
+void fdlib::TimerFd::setSecDelay(long seconds) noexcept
 {
     this->_timer.it_value.tv_sec = seconds;
 }
 
-void fdlib::TimerFd::setDelay(long nanoseconds)
+void fdlib::TimerFd::setDelay(long nanoseconds) noexcept
 {
     std::int64_t seconds = nanoseconds / 1000000000;
 
@@ -42,12 +32,12 @@ void fdlib::TimerFd::setDelay(long nanoseconds)
     this->_timer.it_value.tv_nsec = nanoseconds;
 }
 
-void fdlib::TimerFd::setSecRepeatRate(long seconds)
+void fdlib::TimerFd::setSecRepeatRate(long seconds) noexcept
 {
     this->_timer.it_interval.tv_sec = seconds;
 }
 
-void fdlib::TimerFd::setRepeatRate(long nanoseconds)
+void fdlib::TimerFd::setRepeatRate(long nanoseconds) noexcept
 {
     std::int64_t seconds = nanoseconds / 1000000000;
 
@@ -64,7 +54,7 @@ void fdlib::TimerFd::startTimer() const
        throw std::runtime_error(strerror(errno));
 }
 
-void fdlib::TimerFd::clearTimer() const
+void fdlib::TimerFd::clearTimer() const noexcept
 {
     uint64_t data;
 

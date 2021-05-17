@@ -1,11 +1,10 @@
 cmake_minimum_required(VERSION 3.17)
 project(libfd)
 
-set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 set(CMAKE_CXX_STANDARD 20)
 
 add_library(
-        libfd
+    libfd
         src/FdMonitor.cpp
         src/TimerFd.cpp
         src/StateFd.cpp
@@ -13,13 +12,14 @@ add_library(
 )
 
 target_include_directories(
-        libfd
+    libfd
         PRIVATE
         include
 )
 
 set_target_properties(
-        libfd
+    libfd
         PROPERTIES
-        PREFIX ""
+        PREFIX          ""
+        CMAKE_CXX_FLAGS "-Wall -Wextra -Weffc++"
 )

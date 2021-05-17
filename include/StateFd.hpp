@@ -10,11 +10,12 @@ namespace fdlib
 
             ~StateFd();
 
-            void trigger() const;
+            void trigger() const noexcept;
 
-            void clear() const;
+            void clear() const noexcept;
 
-            [[nodiscard]] int getFd() const;
+            [[nodiscard]] int getFd() const noexcept
+            { return this->_pipefd[0]; }
 
         private:
             int _pipefd[2]{};

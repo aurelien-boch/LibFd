@@ -1,13 +1,14 @@
-#include <FdMonitor.hpp>
 #include <stdexcept>
 #include <cstring>
 #include <utility>
 #include <unistd.h>
+#include "FdMonitor.hpp"
 
-fdlib::FdMonitor::FdMonitor(int epollFlags)
+fdlib::FdMonitor::FdMonitor(int epollFlags) :
+    _epollFd(epoll_create1(epollFlags)),
+    _functions{},
+    _data{}
 {
-    this->_epollFd = epoll_create1(epollFlags);
-
     if (this->_epollFd == -1)
         throw std::runtime_error(strerror(errno));
 }
@@ -45,13 +46,13 @@ void fdlib::FdMonitor::addMonitorFd(int targetFd, std::uint32_t events, const st
     this->_functions.insert({targetFd, data});
 }
 
-void fdlib::FdMonitor::modMonitorFd(int targetFd, std::uint32_t events, std::any data)
+void fdlib::FdMonitor::modMonitorFd(int targetFd, std::uint32_t events, std::any data) noexcept
 {
     this->_editFdData(targetFd, events);
     this->_data.insert_or_assign(targetFd, std::move(data));
 }
 
-void fdlib::FdMonitor::modMonitorFd(int targetFd, std::uint32_t events, const std::function<void(int)> &data)
+void fdlib::FdMonitor::modMonitorFd(int targetFd, std::uint32_t events, const std::function<void(int)> &data) noexcept
 {
     this->_editFdData(targetFd, events);
     this->_functions.insert_or_assign(targetFd, data);
@@ -66,7 +67,8 @@ void fdlib::FdMonitor::delMonitorFd(int targetFd)
         this->_functions.erase(functionsIt);
     else if (dataIt != this->_data.end())
         this->_data.erase(dataIt);
-    epoll_ctl(this->_epollFd, EPOLL_CTL_DEL, targetFd, nullptr);
+    if (epoll_ctl(this->_epollFd, EPOLL_CTL_DEL, targetFd, nullptr) == -1)
+        throw std::runtime_error(strerror(errno));
 }
 
 void fdlib::FdMonitor::waitEvents(std::vector<std::any> &events, int maxEvents, int timeout) const
@@ -82,7 +84,7 @@ void fdlib::FdMonitor::waitEvents(std::vector<std::any> &events, int maxEvents, 
     this->_treatEvents(events, content);
 }
 
-void fdlib::FdMonitor::_treatEvents(std::vector<std::any> &res, std::vector<epoll_event> &events) const
+void fdlib::FdMonitor::_treatEvents(std::vector<std::any> &res, std::vector<epoll_event> &events) const noexcept
 {
     for (const auto &e : events) {
         const auto functionsIt = this->_functions.find(e.data.fd);
@@ -108,7 +110,7 @@ void fdlib::FdMonitor::_editFdData(int targetFd, std::uint32_t events) const
         throw std::runtime_error(strerror(errno));
 }
 
-void fdlib::FdMonitor::unbindFdFunction(int targetFd)
+void fdlib::FdMonitor::unbindFdFunction(int targetFd) noexcept
 {
     const auto functionIt = this->_functions.find(targetFd);
 

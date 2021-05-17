@@ -20,18 +20,18 @@ namespace fdlib
 
             void addMonitorFd(int targetFd, std::uint32_t events, const std::function<void(int fd)> &data);
 
-            void modMonitorFd(int targetFd, std::uint32_t events, std::any data);
+            void modMonitorFd(int targetFd, std::uint32_t events, std::any data) noexcept;
 
-            void modMonitorFd(int targetFd, std::uint32_t events, const std::function<void(int fd)> &data);
+            void modMonitorFd(int targetFd, std::uint32_t events, const std::function<void(int fd)> &data) noexcept;
 
-            void unbindFdFunction(int targetFd);
+            void unbindFdFunction(int targetFd) noexcept;
 
             void delMonitorFd(int targetFd);
 
             void waitEvents(std::vector<std::any> &events, int maxEvents, int timeout) const;
 
         private:
-            void _treatEvents(std::vector<std::any> &res, std::vector<epoll_event> &events) const;
+            void _treatEvents(std::vector<std::any> &res, std::vector<epoll_event> &events) const noexcept;
 
             void _editFdData(int targetFd, std::uint32_t events) const;
 

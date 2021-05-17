@@ -12,32 +12,32 @@ namespace fdlib
 
             ~TimerFd();
 
-            void setSecDelay(long seconds);
+            void setSecDelay(long seconds) noexcept;
 
-            void setDelay(long nanoseconds);
+            void setDelay(long nanoseconds) noexcept;
 
-            void setSecRepeatRate(long seconds);
+            void setSecRepeatRate(long seconds) noexcept;
 
-            void setRepeatRate(long nanoseconds);
+            void setRepeatRate(long nanoseconds) noexcept;
 
-            [[nodiscard]] long getSecDelay() const
+            [[nodiscard]] long getSecDelay() const noexcept
             { return (this->_timer.it_value.tv_sec); };
 
-            [[nodiscard]] long getDelay() const
+            [[nodiscard]] long getDelay() const noexcept
             { return (this->_timer.it_value.tv_nsec); };
 
-            [[nodiscard]] long getSecRepeatRate() const
+            [[nodiscard]] long getSecRepeatRate() const noexcept
             { return (this->_timer.it_interval.tv_sec); };
 
-            [[nodiscard]] long getRepeatRate() const
+            [[nodiscard]] long getRepeatRate() const noexcept
             { return (this->_timer.it_interval.tv_nsec); };
 
-            [[nodiscard]] int getFd() const
+            [[nodiscard]] int getFd() const noexcept
             { return (this->_fd); };
 
             void startTimer() const;
 
-            void clearTimer() const;
+            void clearTimer() const noexcept;
 
             void stopTimer() const;
 

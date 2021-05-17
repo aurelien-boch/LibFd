@@ -8,19 +8,19 @@ namespace fdlib
     class Pipe
     {
         public:
-            Pipe();
+            Pipe() noexcept;
 
             ~Pipe();
 
             template <typename T>
-            void sendData(const T data) const
+            void sendData(const T &data) const noexcept
             {
                 write(this->_pipefd[1], &data, sizeof(T));
             }
 
 
             template <typename T>
-            T readData() const
+            T readData() const noexcept
             {
                 T res;
 
@@ -28,10 +28,10 @@ namespace fdlib
                 return (res);
             }
 
-            [[nodiscard]] int getReadingFd() const
+            [[nodiscard]] int getReadingFd() const noexcept
             { return (this->_pipefd[0]); };
 
-            [[nodiscard]] int getWritingFd() const
+            [[nodiscard]] int getWritingFd() const noexcept
             { return (this->_pipefd[0]); };
 
         private:
