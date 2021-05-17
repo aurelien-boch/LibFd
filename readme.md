@@ -49,7 +49,7 @@ OBJ         =   $(SRC:.c=.o)
 NAME        =   binary_name
 
 all: $(OBJ)
-    $(CC) -o $(NAME) $(OBJ) $(LDFLAGS)
+    $(CXX) -o $(NAME) $(OBJ) $(LDFLAGS)
 
 clean:
     $(RM) $(OBJ)
