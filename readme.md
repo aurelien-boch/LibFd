@@ -125,6 +125,8 @@ int main()
 
 Fill vector with data when stdin is ready for reading:
 ```c++
+#include "lib/libFd/include/FdMonitor.hpp"
+
 int main()
 {
     fdlib::FdMonitor monitor(0);
