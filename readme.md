@@ -116,7 +116,7 @@ int main()
     monitor.addMonitorFd(
         0, //target fd
         EPOLLIN, //event
-        std::function([](int fd) { fdTriggered(fd) })//data or function
+        std::function([](int fd) { fdTriggered(fd); })//data or function
     );
     
     while (cond)
