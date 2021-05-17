@@ -25,3 +25,8 @@ void fdlib::StateFd::clear() const noexcept
 
     read(this->_pipefd[0], &i, sizeof(char));
 }
+
+void fdlib::StateFd::wait() const noexcept
+{
+    this->clear();
+}

@@ -13,7 +13,7 @@ namespace fdlib
             ~Pipe();
 
             template <typename T>
-            void sendData(const T &data) const noexcept
+            void writeData(const T &data) const noexcept
             {
                 write(this->_pipefd[1], &data, sizeof(T));
             }

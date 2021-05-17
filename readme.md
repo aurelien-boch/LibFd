@@ -126,6 +126,7 @@ int main()
 
 Fill vector with data when stdin is ready for reading:
 ```c++
+#include <iostream>
 #include "lib/libFd/include/FdMonitor.hpp"
 
 int main()
@@ -155,6 +156,19 @@ create a pipe, read and write in it. It also give you an access to the fd
 if you want to use it with the FdMonitor class.
 
 ### Some examples
+Writing and reading data into a pipe:
+```c++
+#include <iostream>
+#include "lib/libFd/include/Pipe.hpp"
+
+int main()
+{
+    fdlib::Pipe p;
+
+    p.writeData(15);
+    std::cout << "Read: " << p.readData<int>() << std::endl;
+}
+```
 
 ## StateFd
 
@@ -165,6 +179,30 @@ the FdMonitor class to force the triggering.
 
 ### Some examples
 
+Triggering and clearing a stateFd:
+```c++
+#include <thread>
+#include <chrono>
+#include <iostream>
+#include "lib/libFd/include/StateFd.hpp"
+
+static void triggerFdAfterDelay(const fdlib::StateFd &s, const std::uint64_t s)
+{
+    std::this_thread::sleep_for (std::chrono::seconds(s));
+    s.trigger();
+}
+
+int main()
+{
+    fdlib::StateFd s;
+    std::thread t([&s]() { triggerFdAfterDelay(s); });
+
+    s.wait();
+    std::cout << "Fd triggered" << std::endl;
+    t.join();
+}
+```
+
 ## TimerFd
 
 ### Description
@@ -172,6 +210,20 @@ The TimerFd class is just a wrapper of the C timerfd function. It allows you to
 create fd that will be triggered after a given delay and re-triggered with a given rate.
 
 ### Some examples
+
+Creating a fd that triggers every second;
+```c++
+#include "lib/libFd/include/TimerFd.hpp"
+
+int main()
+{
+    fdlib::TimerFd timer;
+
+    timer.setSecDelay(1);
+    timer.setSecRepeatRate(1);
+    timer.startTimer();
+}
+```
 
 ## Using elements together
 

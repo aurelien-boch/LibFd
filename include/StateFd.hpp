@@ -14,6 +14,8 @@ namespace fdlib
 
             void clear() const noexcept;
 
+            void wait() const noexcept;
+
             [[nodiscard]] int getFd() const noexcept
             { return this->_pipefd[0]; }
 
