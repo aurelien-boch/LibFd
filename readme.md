@@ -49,7 +49,7 @@ OBJ         =   $(SRC:.c=.o)
 NAME        =   binary_name
 
 all: $(OBJ)
-    $(CC) -o $(NAME) $(OBJ) $(LDFLAGS)
+    $(CXX) -o $(NAME) $(OBJ) $(LDFLAGS)
 
 clean:
     $(RM) $(OBJ)
@@ -116,7 +116,7 @@ int main()
     monitor.addMonitorFd(
         0, //target fd
         EPOLLIN, //event
-        std::function([](int fd) { fdTriggered(fd) })//data or function
+        std::function([](int fd) { fdTriggered(fd); })//data or function
     );
     
     while (cond)
