@@ -65,7 +65,7 @@ void fdlib::FdMonitor::modMonitorFd(const fdlib::FileDescriptor &fd, std::any da
     _data.insert_or_assign(fd.getNativeHandle(), std::move(data));
 }
 
-void fdlib::FdMonitor::modMonitorFd(const fdlib::FileDescriptor &fd, const std::function<void(int)> &data)
+void fdlib::FdMonitor::modMonitorFd(const fdlib::FileDescriptor &fd, const std::function<void(const FileDescriptor &fd)> &data)
 {
     if (!this->isFDMonitored(fd))
         throw std::runtime_error("Trying to edit an fd that is not monitored");

@@ -30,7 +30,7 @@ namespace fdlib
 
             void modMonitorFd(const fdlib::FileDescriptor &fd, std::any data);
 
-            void modMonitorFd(const fdlib::FileDescriptor &fd, const std::function<void(int fd)> &data);
+            void modMonitorFd(const fdlib::FileDescriptor &fd, const std::function<void(const FileDescriptor &fd)> &data);
 
             void modMonitorFd(const fdlib::FileDescriptor &fd, MONITOR_FLAGS events, std::any data);
 
