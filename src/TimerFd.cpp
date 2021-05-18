@@ -7,7 +7,7 @@ fdlib::TimerFd::TimerFd(int clockId) :
     _timer{},
     _fd(timerfd_create(clockId, 0), true)
 {
-    if (_fd.getNativeHandle() == -1)
+    if (_fd.getNativeHandle() == FileDescriptor::INVALID_FD)
         throw std::runtime_error(strerror(errno));
 }
 

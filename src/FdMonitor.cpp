@@ -8,7 +8,7 @@ fdlib::FdMonitor::FdMonitor() :
     _functions{},
     _data{}
 {
-    if (_fd.getNativeHandle() == -1)
+    if (_fd.getNativeHandle() == FileDescriptor::INVALID_FD)
         throw std::runtime_error(strerror(errno));
 }
 
@@ -36,7 +36,7 @@ void fdlib::FdMonitor::addMonitorFd(const fdlib::FileDescriptor &fd, fdlib::FdMo
         }
     };
 
-    if (epoll_ctl(_fd.getNativeHandle(), EPOLL_CTL_ADD, fd.getNativeHandle(), &epollData) == -1)
+    if (epoll_ctl(_fd.getNativeHandle(), EPOLL_CTL_ADD, fd, &epollData) == -1)
         throw std::runtime_error(strerror(errno));
     _functions.insert_or_assign(fd.getNativeHandle(), fun);
     _events.insert_or_assign(fd.getNativeHandle(), events);
@@ -55,7 +55,7 @@ void fdlib::FdMonitor::modMonitorFd(const fdlib::FileDescriptor &fd, fdlib::FdMo
     if (eventsIt == _events.end())
         throw std::runtime_error("Trying to edit an fd that is not monitored");
     eventsIt->second = events;
-    _updateFd(fd, evt);
+    _updateFd(fd.getNativeHandle(), evt);
 }
 
 void fdlib::FdMonitor::modMonitorFd(const fdlib::FileDescriptor &fd, std::any data)

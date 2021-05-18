@@ -1,7 +1,6 @@
 #include <iostream>
 #include <Pipe.hpp>
 
-
 int main()
 {
     fdlib::Pipe p;
