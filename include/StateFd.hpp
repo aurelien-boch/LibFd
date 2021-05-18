@@ -8,7 +8,7 @@ namespace fdlib
     class StateFd
     {
         public:
-            StateFd() = default;
+            StateFd();
 
             ~StateFd() = default;
 
