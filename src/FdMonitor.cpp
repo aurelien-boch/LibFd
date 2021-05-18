@@ -119,6 +119,7 @@ void fdlib::FdMonitor::waitEvents(std::vector<std::pair<int, std::any>> &data, i
         throw std::runtime_error(strerror(errno));
     data.clear();
     content.resize(ret);
+    _processEvents(content, data);
 }
 
 bool fdlib::FdMonitor::isFDMonitored(const fdlib::FileDescriptor &fd) const noexcept
