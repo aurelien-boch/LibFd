@@ -12,12 +12,12 @@ link_libraries(libfd)
 
 add_executable(
         AutoClosingFileDescriptor
-        AutoClosingFileDescriptor.cpp
+        src/AutoClosingFileDescriptor.cpp
 )
 
 add_executable(
         CommunicationBetweenThreads
-        CommunicationBetweenThreads.cpp
+        src/CommunicationBetweenThreads.cpp
 )
 
 target_link_libraries(
@@ -28,21 +28,21 @@ target_link_libraries(
 
 add_executable(
         DataOnEvent
-        DataOnEvent.cpp
+        src/DataOnEvent.cpp
 )
 
 add_executable(
         LoopPlusTrackedStdin
-        LoopPlusTrackedStdin.cpp
+        src/LoopPlusTrackedStdin.cpp
 )
 
 add_executable(
     TrackStdin
-    TrackStdin.cpp
+        src/TrackStdin.cpp
 )
 
 add_executable(
         UsingPipe
-        UsingPipe.cpp
+        src/UsingPipe.cpp
 )
 
