@@ -5,20 +5,15 @@
 
 fdlib::TimerFd::TimerFd(int clockId, int flags) :
     _timer{},
-    _fd(timerfd_create(clockId, flags))
+    _fd(timerfd_create(clockId, flags), true)
 {
-    if (this->_fd == -1)
+    if (_fd.getNativeHandle() == -1)
         throw std::runtime_error(strerror(errno));
-}
-
-fdlib::TimerFd::~TimerFd()
-{
-    close(this->_fd);
 }
 
 void fdlib::TimerFd::setSecDelay(long seconds) noexcept
 {
-    this->_timer.it_value.tv_sec = seconds;
+    _timer.it_value.tv_sec = seconds;
 }
 
 void fdlib::TimerFd::setDelay(long nanoseconds) noexcept
@@ -27,14 +22,14 @@ void fdlib::TimerFd::setDelay(long nanoseconds) noexcept
 
     if (seconds > 0) {
         nanoseconds -= seconds * 1000000000;
-        this->_timer.it_value.tv_sec = seconds;
+        _timer.it_value.tv_sec = seconds;
     }
-    this->_timer.it_value.tv_nsec = nanoseconds;
+    _timer.it_value.tv_nsec = nanoseconds;
 }
 
 void fdlib::TimerFd::setSecRepeatRate(long seconds) noexcept
 {
-    this->_timer.it_interval.tv_sec = seconds;
+    _timer.it_interval.tv_sec = seconds;
 }
 
 void fdlib::TimerFd::setRepeatRate(long nanoseconds) noexcept
@@ -43,14 +38,14 @@ void fdlib::TimerFd::setRepeatRate(long nanoseconds) noexcept
 
     if (seconds > 0) {
         nanoseconds -= seconds * 1000000000;
-        this->_timer.it_interval.tv_sec = seconds;
+        _timer.it_interval.tv_sec = seconds;
     }
-    this->_timer.it_interval.tv_nsec = nanoseconds;
+    _timer.it_interval.tv_nsec = nanoseconds;
 }
 
 void fdlib::TimerFd::startTimer() const
 {
-    if (timerfd_settime(this->_fd, 0, &(this->_timer), nullptr) == -1)
+    if (timerfd_settime(_fd.getNativeHandle(), 0, &_timer, nullptr) == -1)
        throw std::runtime_error(strerror(errno));
 }
 
@@ -58,27 +53,24 @@ void fdlib::TimerFd::clearTimer() const noexcept
 {
     uint64_t data;
 
-    read(this->_fd, &data, sizeof(data));
+    read(_fd.getNativeHandle(), &data, sizeof(data));
 }
 
 void fdlib::TimerFd::stopTimer() const
 {
-    itimerspec timer = {
-        .it_interval = {
-            .tv_sec = 0,
-            .tv_nsec = 0
-        },
-        .it_value = {
-            .tv_sec = 0,
-            .tv_nsec = 0
-        }
-    };
+    itimerspec timer{};
 
-    if (timerfd_settime(this->_fd, 0, &timer, nullptr) == -1)
+    if (timerfd_settime(_fd.getNativeHandle(), 0, &timer, nullptr) == -1)
         throw std::runtime_error(strerror(errno));
 }
 
-void fdlib::TimerFd::resetTimer() const
+void fdlib::TimerFd::restartTimer() const
 {
+    this->startTimer();
+}
+
+void fdlib::TimerFd::resetTimer()
+{
+    std::memset(&_timer, 0, sizeof(_timer));
     this->startTimer();
 }

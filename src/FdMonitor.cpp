@@ -1,119 +1,160 @@
 #include <stdexcept>
 #include <cstring>
-#include <utility>
-#include <unistd.h>
 #include "FdMonitor.hpp"
 
-fdlib::FdMonitor::FdMonitor(int epollFlags) :
-    _epollFd(epoll_create1(epollFlags)),
+fdlib::FdMonitor::FdMonitor() :
+    _fd(epoll_create1(0), true),
+    _events{},
     _functions{},
     _data{}
 {
-    if (this->_epollFd == -1)
+    if (_fd.getNativeHandle() == -1)
         throw std::runtime_error(strerror(errno));
 }
 
-fdlib::FdMonitor::~FdMonitor()
-{
-    close(this->_epollFd);
-}
-
-void fdlib::FdMonitor::addMonitorFd(int targetFd, std::uint32_t events, std::any data)
+void fdlib::FdMonitor::addMonitorFd(const fdlib::FileDescriptor &fd, fdlib::FdMonitor::MONITOR_FLAGS events, std::any data)
 {
     epoll_event epollData = {
         .events = events,
         .data = {
-            .fd = targetFd
+            .fd = fd.getNativeHandle()
         }
     };
 
-    if (epoll_ctl(this->_epollFd, EPOLL_CTL_ADD, targetFd, &epollData) == -1)
+    if (epoll_ctl(_fd.getNativeHandle(), EPOLL_CTL_ADD, fd.getNativeHandle(), &epollData) == -1)
         throw std::runtime_error(strerror(errno));
-    this->_data.insert({targetFd, std::move(data)});
+    _data.insert_or_assign(fd.getNativeHandle(), std::move(data));
+    _events.insert_or_assign(fd.getNativeHandle(), events);
 }
 
-void fdlib::FdMonitor::addMonitorFd(int targetFd, std::uint32_t events, const std::function<void(int)> &data)
+void fdlib::FdMonitor::addMonitorFd(const fdlib::FileDescriptor &fd, fdlib::FdMonitor::MONITOR_FLAGS events, const std::function<void(const FileDescriptor &)> &fun)
 {
     epoll_event epollData = {
-            .events = events,
-            .data = {
-                .fd = targetFd
-            }
+        .events = events,
+        .data = {
+            .fd = fd.getNativeHandle()
+        }
     };
 
-    if (epoll_ctl(this->_epollFd, EPOLL_CTL_ADD, targetFd, &epollData) == -1)
+    if (epoll_ctl(_fd.getNativeHandle(), EPOLL_CTL_ADD, fd.getNativeHandle(), &epollData) == -1)
         throw std::runtime_error(strerror(errno));
-    this->_functions.insert({targetFd, data});
+    _functions.insert_or_assign(fd.getNativeHandle(), fun);
+    _events.insert_or_assign(fd.getNativeHandle(), events);
 }
 
-void fdlib::FdMonitor::modMonitorFd(int targetFd, std::uint32_t events, std::any data) noexcept
+void fdlib::FdMonitor::modMonitorFd(const fdlib::FileDescriptor &fd, fdlib::FdMonitor::MONITOR_FLAGS events)
 {
-    this->_editFdData(targetFd, events);
-    this->_data.insert_or_assign(targetFd, std::move(data));
+    const auto eventsIt = _events.find(fd.getNativeHandle());
+    epoll_event evt = {
+        .events = events,
+        .data = {
+            .fd = fd.getNativeHandle()
+        }
+    };
+
+    if (eventsIt == _events.end())
+        throw std::runtime_error("Trying to edit an fd that is not monitored");
+    eventsIt->second = events;
+    _updateFd(fd, evt);
 }
 
-void fdlib::FdMonitor::modMonitorFd(int targetFd, std::uint32_t events, const std::function<void(int)> &data) noexcept
+void fdlib::FdMonitor::modMonitorFd(const fdlib::FileDescriptor &fd, std::any data)
 {
-    this->_editFdData(targetFd, events);
-    this->_functions.insert_or_assign(targetFd, data);
+    if (!this->isFDMonitored(fd))
+        throw std::runtime_error("Trying to edit an fd that is not monitored");
+    _data.insert_or_assign(fd.getNativeHandle(), std::move(data));
 }
 
-void fdlib::FdMonitor::delMonitorFd(int targetFd)
+void fdlib::FdMonitor::modMonitorFd(const fdlib::FileDescriptor &fd, const std::function<void(int)> &data)
 {
-    const auto functionsIt = this->_functions.find(targetFd);
-    const auto dataIt = this->_data.find(targetFd);
+    if (!this->isFDMonitored(fd))
+        throw std::runtime_error("Trying to edit an fd that is not monitored");
+    _functions.insert_or_assign(fd.getNativeHandle(), data);
+}
 
-    if (functionsIt != this->_functions.end())
-        this->_functions.erase(functionsIt);
-    else if (dataIt != this->_data.end())
-        this->_data.erase(dataIt);
-    if (epoll_ctl(this->_epollFd, EPOLL_CTL_DEL, targetFd, nullptr) == -1)
+void fdlib::FdMonitor::modMonitorFd(const fdlib::FileDescriptor &fd, fdlib::FdMonitor::MONITOR_FLAGS events, std::any data)
+{
+    this->modMonitorFd(fd, events);
+    _data.insert_or_assign(fd.getNativeHandle(), std::move(data));
+}
+
+void fdlib::FdMonitor::modMonitorFd(const fdlib::FileDescriptor &fd, fdlib::FdMonitor::MONITOR_FLAGS events, const std::function<void(const FileDescriptor &)> &data)
+{
+    this->modMonitorFd(fd, events);
+    _functions.insert_or_assign(fd.getNativeHandle(), data);
+}
+
+void fdlib::FdMonitor::delMonitorFd(const fdlib::FileDescriptor &fd)
+{
+    const auto functionsIt = _functions.find(fd.getNativeHandle());
+    const auto dataIt = _data.find(fd.getNativeHandle());
+
+    if (functionsIt != _functions.end())
+        _functions.erase(functionsIt);
+    if (dataIt != _data.end())
+        _data.erase(dataIt);
+    if (epoll_ctl(_fd.getNativeHandle(), EPOLL_CTL_DEL, fd.getNativeHandle(), nullptr) == -1)
         throw std::runtime_error(strerror(errno));
 }
 
-void fdlib::FdMonitor::waitEvents(std::vector<std::any> &events, int maxEvents, int timeout) const
+void fdlib::FdMonitor::waitEvents(int maxEvents, int timeout) const
 {
     int ret;
     std::vector<epoll_event> content(maxEvents);
 
-    ret = epoll_wait(this->_epollFd, content.data(), maxEvents, timeout);
+    ret = epoll_wait(_fd.getNativeHandle(), content.data(), maxEvents, timeout);
     if (ret == -1)
         throw std::runtime_error(strerror(errno));
-    events.clear();
     content.resize(ret);
-    this->_treatEvents(events, content);
+    _callFunctions(content);
 }
 
-void fdlib::FdMonitor::_treatEvents(std::vector<std::any> &res, std::vector<epoll_event> &events) const noexcept
+void fdlib::FdMonitor::waitEvents(std::vector<std::pair<int, std::any>> &data, int maxEvents, int timeout) const
 {
-    for (const auto &e : events) {
-        const auto functionsIt = this->_functions.find(e.data.fd);
-        const auto dataIt = this->_data.find(e.data.fd);
+    int ret;
+    std::vector<epoll_event> content(maxEvents);
 
-        if (functionsIt != this->_functions.end())
+    ret = epoll_wait(_fd.getNativeHandle(), content.data(), maxEvents, timeout);
+    if (ret == -1)
+        throw std::runtime_error(strerror(errno));
+    data.clear();
+    content.resize(ret);
+}
+
+bool fdlib::FdMonitor::isFDMonitored(const fdlib::FileDescriptor &fd) const noexcept
+{
+    const auto eventsIt = _events.find(fd.getNativeHandle());
+
+    if (eventsIt == _events.end())
+        return (false);
+    return (true);
+}
+
+void fdlib::FdMonitor::_updateFd(const fdlib::FileDescriptor &fd, epoll_event &evt)
+{
+    if (epoll_ctl(_fd.getNativeHandle(), EPOLL_CTL_MOD, fd.getNativeHandle(), &evt) == -1)
+        throw std::runtime_error(strerror(errno));
+}
+
+void fdlib::FdMonitor::_callFunctions(const std::vector<epoll_event> &vec) const noexcept
+{
+    for (const auto &e : vec) {
+        const auto functionsIt = _functions.find(e.data.fd);
+
+        if (functionsIt != _functions.end())
             functionsIt->second(e.data.fd);
-        if (dataIt != this->_data.end())
-            res.emplace_back(dataIt->second);
     }
 }
 
-void fdlib::FdMonitor::_editFdData(int targetFd, std::uint32_t events) const
+void fdlib::FdMonitor::_processEvents(const std::vector<epoll_event> &vec, std::vector<std::pair<int, std::any>> &data) const noexcept
 {
-    epoll_event epollData = {
-        .events = events,
-        .data = {
-            .fd = targetFd
-        }
-    };
+    for (const auto &e : vec) {
+        const auto functionsIt = _functions.find(e.data.fd);
+        const auto dataIt = _data.find(e.data.fd);
 
-    if (epoll_ctl(this->_epollFd, EPOLL_CTL_MOD, targetFd, &epollData) == -1)
-        throw std::runtime_error(strerror(errno));
-}
-
-void fdlib::FdMonitor::unbindFdFunction(int targetFd) noexcept
-{
-    const auto functionIt = this->_functions.find(targetFd);
-
-    if (functionIt != this->_functions.end())
-        this->_functions.erase(functionIt);
+        if (functionsIt != _functions.end())
+            functionsIt->second(e.data.fd);
+        if (dataIt != _data.end())
+            data.emplace_back(std::pair<int, std::any>({dataIt->first, dataIt->second}));
+    }
 }

@@ -2,6 +2,7 @@
 #define PIPE_HPP
 
 #include <unistd.h>
+#include "FileDescriptor.hpp"
 
 namespace fdlib
 {
@@ -10,32 +11,32 @@ namespace fdlib
         public:
             Pipe() noexcept;
 
-            ~Pipe();
+            ~Pipe() = default;
 
             template <typename T>
             void writeData(const T &data) const noexcept
             {
-                write(this->_pipefd[1], &data, sizeof(T));
+                write(_writingFd.getNativeHandle(), &data, sizeof(T));
             }
-
 
             template <typename T>
             T readData() const noexcept
             {
                 T res;
 
-                read(this->_pipefd[0], &res, sizeof(T));
+                read(_readingFd.getNativeHandle(), &res, sizeof(T));
                 return (res);
             }
 
-            [[nodiscard]] int getReadingFd() const noexcept
-            { return (this->_pipefd[0]); };
+            [[nodiscard]] const fdlib::FileDescriptor &getReadingFd() const noexcept
+            { return _readingFd; };
 
-            [[nodiscard]] int getWritingFd() const noexcept
-            { return (this->_pipefd[0]); };
+            [[nodiscard]] const fdlib::FileDescriptor &getWritingFd() const noexcept
+            { return _writingFd; };
 
         private:
-            int _pipefd[2];
+            fdlib::FileDescriptor _readingFd;
+            fdlib::FileDescriptor _writingFd;
     };
 }
 

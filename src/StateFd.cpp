@@ -1,29 +1,13 @@
-#include <unistd.h>
 #include "StateFd.hpp"
-
-fdlib::StateFd::StateFd()
-{
-    pipe(this->_pipefd);
-}
-
-fdlib::StateFd::~StateFd()
-{
-    close(this->_pipefd[0]);
-    close(this->_pipefd[1]);
-}
 
 void fdlib::StateFd::trigger() const noexcept
 {
-    char i = 1;
-
-    write(this->_pipefd[1], &i, sizeof(char));
+    _pipe.writeData(true);
 }
 
 void fdlib::StateFd::clear() const noexcept
 {
-    char i;
-
-    read(this->_pipefd[0], &i, sizeof(char));
+    _pipe.readData<bool>();
 }
 
 void fdlib::StateFd::wait() const noexcept
