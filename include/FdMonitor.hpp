@@ -6,39 +6,55 @@
 #include <functional>
 #include <cstdint>
 #include <sys/epoll.h>
+#include "FileDescriptor.hpp"
 
 namespace fdlib
 {
     class FdMonitor
     {
         public:
-            explicit FdMonitor(int epollFlags);
+            enum MONITOR_FLAGS {
+                EVENT_READ = EPOLLIN,
+                EVENT_WRITE = EPOLLOUT
+            };
 
-            ~FdMonitor();
+            FdMonitor();
 
-            void addMonitorFd(int targetFd, std::uint32_t events, std::any data);
+            ~FdMonitor() = default;
 
-            void addMonitorFd(int targetFd, std::uint32_t events, const std::function<void(int fd)> &data);
+            void addMonitorFd(const fdlib::FileDescriptor &fd, MONITOR_FLAGS events, std::any data);
 
-            void modMonitorFd(int targetFd, std::uint32_t events, std::any data) noexcept;
+            void addMonitorFd(const fdlib::FileDescriptor &fd, MONITOR_FLAGS events, const std::function<void (const FileDescriptor &fd)> &fun);
 
-            void modMonitorFd(int targetFd, std::uint32_t events, const std::function<void(int fd)> &data) noexcept;
+            void modMonitorFd(const fdlib::FileDescriptor &fd, MONITOR_FLAGS events);
 
-            void unbindFdFunction(int targetFd) noexcept;
+            void modMonitorFd(const fdlib::FileDescriptor &fd, std::any data);
 
-            void delMonitorFd(int targetFd);
+            void modMonitorFd(const fdlib::FileDescriptor &fd, const std::function<void(int fd)> &data);
 
-            void waitEvents(std::vector<std::any> &events, int maxEvents, int timeout) const;
+            void modMonitorFd(const fdlib::FileDescriptor &fd, MONITOR_FLAGS events, std::any data);
+
+            void modMonitorFd(const fdlib::FileDescriptor &fd, MONITOR_FLAGS events, const std::function<void(const FileDescriptor &fd)> &data);
+
+            void delMonitorFd(const fdlib::FileDescriptor &fd);
+
+            void waitEvents(int maxEvents, int timeout) const;
+
+            void waitEvents(std::vector<std::pair<int, std::any>> &data, int maxEvents, int timeout) const;
+
+            bool isFDMonitored(const fdlib::FileDescriptor &fd) const noexcept;
 
         private:
-            void _treatEvents(std::vector<std::any> &res, std::vector<epoll_event> &events) const noexcept;
 
-            void _editFdData(int targetFd, std::uint32_t events) const;
+            void _updateFd(const fdlib::FileDescriptor &fd, epoll_event &evt);
 
-            int _epollFd;
+            void _callFunctions(const std::vector<epoll_event> &vec) const noexcept;
 
-            std::unordered_map<int, std::function<void(int fd)>> _functions;
+            void _processEvents(const std::vector<epoll_event> &vec, std::vector<std::pair<int, std::any>> &data) const noexcept;
 
+            fdlib::FileDescriptor _fd;
+            std::unordered_map<int, MONITOR_FLAGS> _events;
+            std::unordered_map<int, std::function<void(const FileDescriptor &fd)>> _functions;
             std::unordered_map<int, std::any> _data;
     };
 }

@@ -1,14 +1,16 @@
 #ifndef STATEFD_HPP
 #define STATEFD_HPP
 
+#include "Pipe.hpp"
+
 namespace fdlib
 {
     class StateFd
     {
         public:
-            StateFd();
+            StateFd() = default;
 
-            ~StateFd();
+            ~StateFd() = default;
 
             void trigger() const noexcept;
 
@@ -16,11 +18,11 @@ namespace fdlib
 
             void wait() const noexcept;
 
-            [[nodiscard]] int getFd() const noexcept
-            { return this->_pipefd[0]; }
+            [[nodiscard]] const FileDescriptor &getFd() const noexcept
+            { return _pipe.getReadingFd(); }
 
         private:
-            int _pipefd[2]{};
+            fdlib::Pipe _pipe;
     };
 }
 

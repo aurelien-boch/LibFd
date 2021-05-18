@@ -1,13 +1,12 @@
 #include "Pipe.hpp"
 
 fdlib::Pipe::Pipe() noexcept :
-    _pipefd()
+    _readingFd(true),
+    _writingFd(true)
 {
-    pipe(this->_pipefd);
-}
+    int pipeFds[2];
 
-fdlib::Pipe::~Pipe()
-{
-    close(this->_pipefd[0]);
-    close(this->_pipefd[1]);
+    pipe(pipeFds);
+    _readingFd.bindFd(pipeFds[0]);
+    _writingFd.bindFd(pipeFds[1]);
 }

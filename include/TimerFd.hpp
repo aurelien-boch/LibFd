@@ -2,6 +2,7 @@
 #define TIMERFD_HPP
 
 #include <sys/timerfd.h>
+#include "FileDescriptor.hpp"
 
 namespace fdlib
 {
@@ -10,7 +11,15 @@ namespace fdlib
         public:
             TimerFd(int clockId, int flags);
 
-            ~TimerFd();
+            void startTimer() const;
+
+            void clearTimer() const noexcept;
+
+            void stopTimer() const;
+
+            void restartTimer() const;
+
+            void resetTimer();
 
             void setSecDelay(long seconds) noexcept;
 
@@ -21,32 +30,23 @@ namespace fdlib
             void setRepeatRate(long nanoseconds) noexcept;
 
             [[nodiscard]] long getSecDelay() const noexcept
-            { return (this->_timer.it_value.tv_sec); };
+            { return _timer.it_value.tv_sec; };
 
             [[nodiscard]] long getDelay() const noexcept
-            { return (this->_timer.it_value.tv_nsec); };
+            { return _timer.it_value.tv_nsec; };
 
             [[nodiscard]] long getSecRepeatRate() const noexcept
-            { return (this->_timer.it_interval.tv_sec); };
+            { return _timer.it_interval.tv_sec; };
 
             [[nodiscard]] long getRepeatRate() const noexcept
-            { return (this->_timer.it_interval.tv_nsec); };
+            { return _timer.it_interval.tv_nsec; };
 
-            [[nodiscard]] int getFd() const noexcept
-            { return (this->_fd); };
-
-            void startTimer() const;
-
-            void clearTimer() const noexcept;
-
-            void stopTimer() const;
-
-            void resetTimer() const;
+            [[nodiscard]] const fdlib::FileDescriptor &getFd() const noexcept
+            { return _fd; };
 
         private:
             itimerspec _timer;
-
-            int _fd;
+            fdlib::FileDescriptor _fd;
     };
 }
 

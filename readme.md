@@ -261,7 +261,6 @@ static void delayedTrigger(const fdlib::TimerFd &timer)
     std::cout << "Delayed trigger has been triggered" << std::endl;
 }
 
-
 static void prepareTimers(
     fdlib::TimerFd &firstLoopTimer,
     fdlib::TimerFd &secondLoopTimer,

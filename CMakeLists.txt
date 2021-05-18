@@ -9,6 +9,7 @@ add_library(
         src/TimerFd.cpp
         src/StateFd.cpp
         src/Pipe.cpp
+        src/FileDescriptor.cpp
 )
 
 target_include_directories(
