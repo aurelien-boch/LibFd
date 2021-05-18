@@ -2,7 +2,7 @@
 
 LibFd is a C++ library that wraps some C functions and allow you to do
 cool stuff with it. You can for example launch asynchronous functions,
-monitor fd, create fd and trigger it manually and many other things.
+monitor fds, create fds and trigger it manually and many other things.
 
 - [Installing](#installing)
 - [FdMonitor](#FdMonitor)
@@ -90,7 +90,7 @@ fclean: clean
 
 ### Description
 The FdMonitor class allows you to monitor fds for multiple events.
-You can then bind data and or functions to events on fds
+You can then bind data and/or functions to events on fds.
 
 To access events list and description:
 ```bash
@@ -99,7 +99,7 @@ $ man 2 epoll_ctl
 
 ### Some examples
 
-Trigger function when stdin is ready for reading:
+Triggering a function when stdin is ready for reading:
 ```c++
 #include "lib/libFd/include/FdMonitor.hpp"
 
@@ -124,7 +124,7 @@ int main()
 }
 ```
 
-Fill vector with data when stdin is ready for reading:
+Filling a vector with data when stdin is ready for reading:
 ```c++
 #include <iostream>
 #include "lib/libFd/include/FdMonitor.hpp"
@@ -152,11 +152,11 @@ int main()
 
 ### Description
 The Pipe class is just a wrapper of the C pipe function. It allows you to
-create a pipe, read and write in it. It also give you an access to the fd
+create a pipe, read and write to it. It also gives you an access to the fd
 if you want to use it with the FdMonitor class.
 
 ### Some examples
-Writing and reading data into a pipe:
+Writing and reading data in and out of a pipe:
 ```c++
 #include <iostream>
 #include "lib/libFd/include/Pipe.hpp"
