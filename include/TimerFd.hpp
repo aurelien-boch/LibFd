@@ -9,7 +9,7 @@ namespace fdlib
     class TimerFd
     {
         public:
-            TimerFd(int clockId, int flags);
+            explicit TimerFd(int clockId = CLOCK_MONOTONIC);
 
             void startTimer() const;
 

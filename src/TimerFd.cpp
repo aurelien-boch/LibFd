@@ -3,9 +3,9 @@
 #include <unistd.h>
 #include "TimerFd.hpp"
 
-fdlib::TimerFd::TimerFd(int clockId, int flags) :
+fdlib::TimerFd::TimerFd(int clockId) :
     _timer{},
-    _fd(timerfd_create(clockId, flags), true)
+    _fd(timerfd_create(clockId, 0), true)
 {
     if (_fd.getNativeHandle() == -1)
         throw std::runtime_error(strerror(errno));
