@@ -12,7 +12,6 @@ static void callback(const fdlib::FileDescriptor &fd)
 
 int main()
 {
-    std::cout << "Hello, world!" << std::endl;
     fdlib::FdMonitor monitor;
 
     monitor.addMonitorFd(

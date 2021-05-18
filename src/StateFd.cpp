@@ -1,5 +1,10 @@
 #include "StateFd.hpp"
 
+fdlib::StateFd::StateFd() :
+    _pipe()
+{}
+
+
 void fdlib::StateFd::trigger() const noexcept
 {
     _pipe.writeData(true);
