@@ -1,4 +1,8 @@
-CPPFLAGS	:=	-Wall -Wextra -Weffc++ -I include/ -std=gnu++2a
+CPPFLAGS	:=	-Wall		\
+				-Wextra		\
+				-Weffc++	\
+				-I include/	\
+				-std=gnu++2a
 
 SRC			:=	src/FdMonitor.cpp	\
 				src/Pipe.cpp		\
