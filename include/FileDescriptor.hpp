@@ -6,9 +6,9 @@ namespace fdlib
     class FileDescriptor
     {
         public:
-            explicit FileDescriptor(bool closeOnDestroy = false); // NOLINT(google-explicit-constructor)
+            explicit FileDescriptor(bool closeOnDestroy = false);
 
-            FileDescriptor(int fd, bool closeOnDestroy = false); // NOLINT(google-explicit-constructor)
+            FileDescriptor(int fd, bool closeOnDestroy = false);
 
             ~FileDescriptor();
 
@@ -20,11 +20,11 @@ namespace fdlib
             bool operator==(const int other) const noexcept
             { return (_handle == other); };
 
-            operator int() const noexcept // NOLINT(google-explicit-constructor)
+            operator int() const noexcept
             { return _handle; };
 
-            static const int INVALID_FD = 0;
-
+            static const int INVALID_FD = -1;
+fff
         private:
             bool _closeOnDestroy;
             int _handle;

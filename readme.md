@@ -45,7 +45,7 @@ RM          =   rm -rf
 
 SRC         =   source.cpp
 
-OBJ         =   $(SRC:.c=.o)
+OBJ         =   $(SRC:.cpp=.o)
 NAME        =   binary_name
 
 all: $(OBJ)
